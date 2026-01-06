@@ -10,6 +10,17 @@ supplier_service = SupplierService(supplier_repo)
 @supplier_bp.route('/', methods=['POST'])
 @token_required
 def add_supplier():
+    
+    """
+    Thêm nhà cung cấp mới
+    ---
+    tags: [Suppliers]
+    security: [{BearerAuth: []}]
+    parameters:
+      - in: body
+        ...
+    """
+    # code logic...
     data = request.get_json()
     owner_id = request.current_user_id # Lấy từ token
     try:

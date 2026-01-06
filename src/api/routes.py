@@ -45,8 +45,8 @@ def register_routes(app):
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(supplier_bp, url_prefix='/suppliers')
     app.register_blueprint(stock_import_bp, url_prefix='/stock-imports')
-    app.register_blueprint(stock_import_detail_bp, url_prefix='/stock-import-details')
-    
+    app.register_blueprint(stock_import_detail_bp, url_prefix='/stock-import-details') 
+
 
 
 

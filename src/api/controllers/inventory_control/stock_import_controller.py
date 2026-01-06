@@ -11,10 +11,29 @@ stock_service = StockImportService(stock_repo)
 @token_required
 def import_goods():
     """
-    Tạo phiếu nhập hàng (Tăng tồn kho sản phẩm tự động)
+    Tạo phiếu nhập hàng (Tăng tồn kho tự động)
+    ---
+    tags: [Inventory Control]
+    security: [{BearerAuth: []}]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          properties:
+            supplier_id: {type: integer, example: 1}
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  product_id: {type: integer, example: 1}
+                  quantity: {type: integer, example: 10}
+                  unit_price: {type: number, example: 50000}
+    responses:
+      201: {description: "Nhập hàng thành công"}
     """
     data = request.get_json()
-    owner_id = request.current_user_id
+    
     
     try:
         result = stock_service.create_stock_import(data, owner_id)

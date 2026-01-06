@@ -7,9 +7,24 @@ stock_import_detail_bp = Blueprint('stock_import_detail_bp', __name__)
 repo = StockImportDetailRepository()
 service = StockImportDetailService(repo)
 
-@stock_import_detail_bp.route('/', methods=['POST'])
+
+@stock_import_detail_bp.route('/import/<int:import_id>', methods=['GET'])
 @token_required
-def add_detail():
+def get_details(import_id):
+    """
+    Lấy chi tiết của một phiếu nhập hàng
+    ---
+    tags: [Inventory Control]
+    security: [{BearerAuth: []}]
+    parameters:
+      - name: import_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200: {description: "Danh sách chi tiết sản phẩm"}
+    """
+    # ... logic xử lý ...
     data = request.get_json()
     try:
         detail = service.create_detail(data)
@@ -20,16 +35,3 @@ def add_detail():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-@stock_import_detail_bp.route('/import/<int:import_id>', methods=['GET'])
-@token_required
-def get_details(import_id):
-    details = service.get_details_by_import(import_id)
-    result = []
-    for d in details:
-        result.append({
-            "detail_id": d.detail_id,
-            "product_id": d.product_id,
-            "quantity": d.quantity,
-            "unit_price": float(d.unit_price)
-        })
-    return jsonify(result), 200
