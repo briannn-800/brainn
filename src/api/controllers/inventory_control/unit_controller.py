@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.unit_service import UnitService
+from services.inventory_service.unit_service import UnitService
 from infrastructure.repositories.inventory_repo.unit_repository import UnitRepository
 from infrastructure.databases.mssql import session
 from api.middlewares.auth_middleware import token_required

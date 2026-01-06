@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.product_service import ProductService
+from services.inventory_service.product_service import ProductService
 from infrastructure.repositories.inventory_repo.product_repository import ProductRepository
 from infrastructure.databases.mssql import session
 from api.middlewares.auth_middleware import token_required

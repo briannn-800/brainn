@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from api.middlewares.auth_middleware import token_required
-from services.ai_draft_order_service import AIDraftOrderService
+from services.ai_sore_service.ai_draft_order_service import AIDraftOrderService
 from infrastructure.repositories.ai_core_repo.ai_draft_order_repository import AIDraftOrderRepository
 from infrastructure.databases.mssql import session
 

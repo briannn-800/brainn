@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from api.middlewares.auth_middleware import token_required
-from services.debt_service import DebtService
+from services.sale_and_finance_service.debt_service import DebtService
 from infrastructure.repositories.sale_and_finance_repo.debt_repository import DebtRepository
 from infrastructure.databases.mssql import session
 

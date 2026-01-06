@@ -37,3 +37,21 @@ def add_order_detail():
         return success_response(OrderDetailResponseSchema().dump(result), 201)
     except Exception as e:
         return error_response(str(e), 500)
+def add_order_with_details(self, order_model):
+        try:
+            self.session.add(order_model)
+            
+            # LOGIC QUAN TRỌNG: Duyệt qua từng món hàng để trừ tồn kho
+            for detail in order_model.details:
+                product = self.session.query(ProductModel).filter_by(product_id=detail.product_id).first()
+                if product:
+                    if product.stock_quantity < detail.order_quantity:
+                        raise ValueError(f"Sản phẩm {product.product_name} không đủ hàng!")
+                    product.stock_quantity -= detail.order_quantity # Trừ kho
+
+            self.session.commit()
+            self.session.refresh(order_model)
+            return order_model
+        except Exception as e:
+            self.session.rollback()
+            raise e
