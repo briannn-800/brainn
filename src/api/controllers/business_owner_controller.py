@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services.business_owner_service import BusinessOwnerService
-from infrastructure.repositories.business_owner_repository import BusinessOwnerRepository
+from infrastructure.repositories.access_and_identity_repo.business_owner_repository import BusinessOwnerRepository
 from infrastructure.databases.mssql import session
 from api.middlewares.auth_middleware import token_required
 business_owner_bp = Blueprint('business_owner_bp', __name__)

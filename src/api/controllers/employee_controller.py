@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services.employee_service import EmployeeService
-from infrastructure.repositories.employee_repository import EmployeeRepository
+from infrastructure.repositories.access_and_identity_repo.employee_repository import EmployeeRepository
 from infrastructure.databases.mssql import session
 from api.middlewares.auth_middleware import token_required
 

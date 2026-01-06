@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from infrastructure.repositories.subscription_plan_repository import SubscriptionPlanRepository
+from infrastructure.repositories.access_and_identity_repo.subscription_plan_repository import SubscriptionPlanRepository
 from services.subscription_plan_service import SubscriptionPlanService
 from infrastructure.databases.mssql import session
 from api.middlewares.auth_middleware import token_required

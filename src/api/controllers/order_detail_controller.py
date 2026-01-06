@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 from api.schemas.order_detail import OrderDetailRequestSchema, OrderDetailResponseSchema
-from infrastructure.repositories.order_detail_repository import OrderDetailRepository
+from infrastructure.repositories.sale_and_finance_repo.order_detail_repository import OrderDetailRepository
 from domain.models.order_detail import OrderDetail
 from api.responses import success_response, error_response
 

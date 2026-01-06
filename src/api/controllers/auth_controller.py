@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from services.auth_service import AuthService
-from infrastructure.repositories.administrator_repository import AdministratorRepository
-from infrastructure.repositories.business_owner_repository import BusinessOwnerRepository
-from infrastructure.repositories.employee_repository import EmployeeRepository
+from infrastructure.repositories.access_and_identity_repo.administrator_repository import AdministratorRepository
+from infrastructure.repositories.access_and_identity_repo.business_owner_repository import BusinessOwnerRepository
+from infrastructure.repositories.access_and_identity_repo.employee_repository import EmployeeRepository
 from infrastructure.databases.mssql import session
 
 auth_bp = Blueprint('auth_bp', __name__)

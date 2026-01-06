@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from api.middlewares.auth_middleware import token_required
 from services.ai_assistant_service import AIAssistantService
-from infrastructure.repositories.ai_assistant_repository import AIAssistantRepository
+from infrastructure.repositories.ai_core_repo.ai_assistant_repository import AIAssistantRepository
 from infrastructure.databases.mssql import session
 
 ai_assistant_bp = Blueprint('ai_assistant_bp', __name__)

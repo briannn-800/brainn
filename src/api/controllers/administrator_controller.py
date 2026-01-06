@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from infrastructure.repositories.administrator_repository import AdministratorRepository
+from infrastructure.repositories.access_and_identity_repo.administrator_repository import AdministratorRepository
 from services.administrator_service import AdministratorService
 from infrastructure.databases.mssql import session
 

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from infrastructure.repositories.customer_repository import CustomerRepository
+from infrastructure.repositories.sale_and_finance_repo.customer_repository import CustomerRepository
 from services.customer_service import CustomerService
 from infrastructure.databases.mssql import session
 from api.middlewares.auth_middleware import token_required

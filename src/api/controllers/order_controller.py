@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from api.middlewares.auth_middleware import token_required # Dùng ổ khóa
-from infrastructure.repositories.order_repository import OrderRepository
+from infrastructure.repositories.sale_and_finance_repo.order_repository import OrderRepository
 from services.order_service import OrderService
 from infrastructure.databases.mssql import session
 
