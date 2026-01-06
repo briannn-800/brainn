@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from api.middlewares.auth_middleware import token_required
 from infrastructure.repositories.inventory_repo.supplier_repository import SupplierRepository
-from services.supplier_service import SupplierService
+from services.inventory_service.supplier_service import SupplierService
 
 supplier_bp = Blueprint('supplier_bp', __name__)
 supplier_repo = SupplierRepository()

@@ -15,8 +15,8 @@ from api.controllers.ai_core_control.ai_assistant_controller import ai_assistant
 from api.controllers.ai_core_control.ai_draft_order_controller import ai_draft_order_bp
 from api.controllers.auth_controller import auth_bp
 from api.controllers.inventory_control.supplier_controller import supplier_bp
-
-
+from api.controllers.inventory_control.stock_import_controller import stock_import_bp
+from api.controllers.inventory_control.stock_import_detail_controller import stock_import_detail_bp
 
 
 
@@ -44,6 +44,9 @@ def register_routes(app):
     app.register_blueprint(ai_draft_order_bp, url_prefix='/ai-draft-orders')
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(supplier_bp, url_prefix='/suppliers')
+    app.register_blueprint(stock_import_bp, url_prefix='/stock-imports')
+    app.register_blueprint(stock_import_detail_bp, url_prefix='/stock-import-details')
+    
 
 
 

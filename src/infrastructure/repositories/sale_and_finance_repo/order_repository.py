@@ -1,5 +1,5 @@
 from infrastructure.models.sale_and_finance.order_model import OrderModel
-from infrastructure.models.sale_and_finance.order_detail_model import OrderDetailModel
+from infrastructure.models.inventory.product_model import ProductModel
 from infrastructure.databases.mssql import session
 
 class OrderRepository:
@@ -9,12 +9,18 @@ class OrderRepository:
     def add_order_with_details(self, order_model):
         try:
             self.session.add(order_model)
-            # Khi commit, SQLAlchemy sẽ tự động lưu luôn cả list 'details' bên trong order_model
+            
+            # LOGIC CẨN THẬN: Duyệt qua từng món hàng để trừ tồn kho
+            for detail in order_model.details:
+                product = self.session.query(ProductModel).filter_by(product_id=detail.product_id).first()
+                if product:
+                    if product.stock_quantity < detail.order_quantity:
+                        raise ValueError(f"Sản phẩm {product.product_name} không đủ hàng trong kho!")
+                    product.stock_quantity -= detail.order_quantity # Trừ tồn kho
+            
             self.session.commit()
             self.session.refresh(order_model)
             return order_model
         except Exception as e:
-            self.session.rollback() # Hủy nếu có lỗi để tránh sai lệch tiền
+            self.session.rollback()
             raise e
-    def get_all(self):
-        return self.session.query(OrderModel).all()
