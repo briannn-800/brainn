@@ -11,3 +11,4 @@ class EmployeeModel(Base):
     active_status = Column(Boolean, default=True)
     # Khóa ngoại: Nhân viên thuộc về một Business Owner
     owner_id = Column(Integer, ForeignKey('business_owners.owner_id'))
+    password = Column(String(255), nullable=False)

@@ -2,85 +2,84 @@ from domain.models.itodo_repository import ITodoRepository
 from domain.models.todo import Todo
 from typing import List, Optional
 from dotenv import load_dotenv
-import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-from config import Config
-from sqlalchemy import Column, Integer, String, DateTime
-from infrastructure.databases import Base
-from sqlalchemy.orm import Session
 from infrastructure.models.todo_model import TodoModel
 from infrastructure.databases.mssql import session
+from sqlalchemy.orm import Session
+
 load_dotenv()
 
 class TodoRepository(ITodoRepository):
     def __init__(self, session: Session = session):
-        self._todos = []
-        self._id_counter = 1
         self.session = session
 
     def add(self, todo: Todo) -> TodoModel:
+        """Thêm mới Todo vào Database"""
         try:
-            #Manual mapping from Todo to TodoModel
-            todo = TodoModel(
+            # 1. Chuyển đổi từ Domain (Todo) -> Database Model (TodoModel)
+            new_todo_model = TodoModel(
                 title=todo.title,
                 description=todo.description,
                 status=todo.status,
                 created_at=todo.created_at,
                 updated_at=todo.updated_at
             )
-            self.session.add(todo)
+            
+            # 2. Lưu vào DB
+            self.session.add(new_todo_model)
             self.session.commit()
-            self.session.refresh(todo)
-            return todo
+            self.session.refresh(new_todo_model)
+            
+            return new_todo_model
         except Exception as e:
             self.session.rollback()
-            raise ValueError('Todo not found')
+            raise ValueError(f'Lỗi khi thêm Todo: {str(e)}')
         finally:
             self.session.close()
-    
-    # def add(self, todo: Todo) -> Todo:
-    #     todo.id = self._id_counter
-    #     self._id_counter += 1
-    #     self._todos.append(todo)
-    #     return todo
 
     def get_by_id(self, todo_id: int) -> Optional[TodoModel]:
+        """Lấy 1 Todo theo ID"""
         return self.session.query(TodoModel).filter_by(id=todo_id).first()
 
-
-    # def list(self) -> List[Todo]:
-    #     self._todos
-    #     return self._todos
     def list(self) -> List[TodoModel]:
-        self._todos = session.query(TodoModel).all()
+        """Lấy danh sách tất cả Todo"""
         # select * from todos
-        return self._todos
+        return self.session.query(TodoModel).all()
 
-
-    def update(self, todo: TodoModel) -> TodoModel:
+    def update(self, todo: Todo) -> TodoModel:
+        """Cập nhật Todo"""
         try:
-            self.session.merge(todo)
+            # 1. Tìm bản ghi cũ trong Database bằng ID
+            todo_model = self.session.query(TodoModel).filter_by(id=todo.id).first()
+            
+            if not todo_model:
+                raise ValueError('Todo not found')
+
+            # 2. Cập nhật dữ liệu mới vào bản ghi cũ
+            todo_model.title = todo.title
+            todo_model.description = todo.description
+            todo_model.status = todo.status
+            todo_model.updated_at = todo.updated_at
+            
+            # 3. Lưu thay đổi
             self.session.commit()
-            return todo
+            return todo_model
         except Exception as e:
             self.session.rollback()
-            raise ValueError('Todo not found')
+            raise ValueError(f'Lỗi khi cập nhật Todo: {str(e)}')
         finally:
             self.session.close()
 
     def delete(self, todo_id: int) -> None:
-        # self._todos = [t for t in self._todos if t.id != todo_id] 
+        """Xóa Todo"""
         try:
-            todo = self.session.query(TodoModel).filter_by(id=todo_id).first()
-            if todo:
-                self.session.delete(todo)
+            todo_model = self.session.query(TodoModel).filter_by(id=todo_id).first()
+            if todo_model:
+                self.session.delete(todo_model)
                 self.session.commit()
             else:
                 raise ValueError('Todo not found')
         except Exception as e:
             self.session.rollback()
-            raise ValueError('Todo not found')
+            raise ValueError(f'Lỗi khi xóa Todo: {str(e)}')
         finally:
             self.session.close()
-

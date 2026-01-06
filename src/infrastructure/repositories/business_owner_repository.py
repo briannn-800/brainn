@@ -12,12 +12,13 @@ class BusinessOwnerRepository:
     def add(self, owner: BusinessOwner) -> BusinessOwnerModel:
         try:
             db_owner = BusinessOwnerModel(
-                owner_name=owner.owner_name,
-                phone_number=owner.phone_number,
-                email=owner.email,
-                account_status=owner.account_status,
-                admin_id=owner.admin_id, # Đảm bảo dòng này có dữ liệu
-                plan_id=owner.plan_id    # Đảm bảo dòng này có dữ liệu
+            owner_name=owner.owner_name,
+            phone_number=owner.phone_number,
+            email=owner.email,
+            account_status=owner.account_status,
+            admin_id=owner.admin_id,
+            plan_id=owner.plan_id,
+            password=owner.password # Cần lưu trường này để sau này Login
             )
             self.session.add(db_owner)
             self.session.commit()
@@ -26,9 +27,12 @@ class BusinessOwnerRepository:
         except Exception as e:
             self.session.rollback()
             raise e
-
+    def get_by_name(self, name: str) -> Optional[BusinessOwnerModel]:
+        """
+        Tìm kiếm Chủ cửa hàng theo tên đăng nhập (owner_name)
+        Phục vụ cho chiến thuật Auth quét 3 bảng.
+        """
+        return self.session.query(BusinessOwnerModel).filter_by(owner_name=name).first()
     def get_all(self) -> List[BusinessOwnerModel]:
+        """Lấy toàn bộ danh sách chủ shop"""
         return self.session.query(BusinessOwnerModel).all()
-
-    def get_by_id(self, owner_id: int) -> Optional[BusinessOwnerModel]:
-        return self.session.query(BusinessOwnerModel).filter_by(owner_id=owner_id).first()

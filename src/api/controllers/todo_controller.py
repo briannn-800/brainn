@@ -1,10 +1,10 @@
-from flask import Blueprint, request, jsonify
+'''from flask import Blueprint, request, jsonify
 from services.todo_service import TodoService
 from infrastructure.repositories.todo_repository import TodoRepository
 from api.schemas.todo import TodoRequestSchema, TodoResponseSchema
 from datetime import datetime
 from infrastructure.databases.mssql import session
-bp = Blueprint('todo', __name__, url_prefix='/todos')
+bp = Blueprint('todo', __name__)
 
 todo_service = TodoService(TodoRepository(session))
 
@@ -210,4 +210,4 @@ def delete_todo(todo_id):
                     type: string
     """
     todo_service.delete_todo(todo_id)
-    return '', 204
+    return '', 204'''

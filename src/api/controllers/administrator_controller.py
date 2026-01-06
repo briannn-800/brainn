@@ -1,58 +1,62 @@
-from flask import Blueprint, request
-from api.schemas.administrator import AdministratorRequestSchema, AdministratorResponseSchema
+from flask import Blueprint, request, jsonify
 from infrastructure.repositories.administrator_repository import AdministratorRepository
-from domain.models.administrator import Administrator
-from api.responses import success_response, error_response
+from services.administrator_service import AdministratorService
+from infrastructure.databases.mssql import session
 
-# 1. Khởi tạo Blueprint
 admin_bp = Blueprint('admin_bp', __name__)
 
-# 2. Khởi tạo Repository
-repo = AdministratorRepository()
+# Khởi tạo đúng dây chuyền
+admin_repo = AdministratorRepository(session)
+admin_service = AdministratorService(admin_repo)
+
+# ... (Phần import giữ nguyên)
 
 @admin_bp.route('/', methods=['POST'])
-def create_admin():
-    '''
-    Create a new administrator
+def create():
+    """
+    Tạo Admin mới
     ---
-    tags:
-      - Administrators
+    tags: [Administrators]
     parameters:
       - in: body
         name: body
         schema:
-          $ref: '#/components/schemas/AdministratorRequest'
+          required: [admin_name, password]
+          properties:
+            admin_name: {type: string, example: "admin_test"}
+            password: {type: string, example: "123456"}
+            admin_permission: {type: string, example: "Full"}
     responses:
-      201:
-        description: Admin created successfully
-    '''
+      201: {description: "Thành công"}
+    """
     try:
-        data = request.json
-        # Validate (Optional but recommended)
-        schema = AdministratorRequestSchema()
-        errors = schema.validate(data)
-        if errors:
-            return error_response(errors, 400)
-
-        new_admin = Administrator(
-            admin_name=data['admin_name'],
-            admin_permission=data.get('admin_permission') 
-        )
-        result = repo.add(new_admin)
-        return success_response(AdministratorResponseSchema().dump(result), 201)
+        data = request.get_json()
+        result = admin_service.create_admin(data)
+        return jsonify({"message": "Thành công", "id": result.admin_id}), 201
     except Exception as e:
-        return error_response(str(e), 500)
+        return jsonify({"error": str(e)}), 400
+
+# ... (giữ nguyên phần khởi tạo trên đầu)
 
 @admin_bp.route('/', methods=['GET'])
-def get_admins():
-    '''
-    Get all administrators
+def list_admins():
+    """
+    Lấy danh sách Admin
     ---
-    tags:
-      - Administrators
-    responses:
-      200:
-        description: List of administrators
-    '''
-    admins = repo.get_all()
-    return success_response(AdministratorResponseSchema(many=True).dump(admins))
+    get:
+      tags: [Administrators]
+      responses:
+        200:
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdministratorResponse'
+    """
+    try:
+        admins = admin_service.get_all_admins() # Cần thêm hàm này trong Service/Repo
+        return jsonify([{"id": a.admin_id, "name": a.admin_name} for a in admins]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

@@ -1,4 +1,4 @@
-from api.controllers.todo_controller import bp as todo_bp
+#from api.controllers.todo_controller import bp as todo_bp
 from api.controllers.business_owner_controller import business_owner_bp
 from api.controllers.employee_controller import employee_bp
 from api.controllers.product_controller import product_bp
@@ -13,6 +13,8 @@ from api.controllers.payment_controller import payment_bp
 from api.controllers.account_report_controller import account_report_bp
 from api.controllers.ai_assistant_controller import ai_assistant_bp
 from api.controllers.ai_draft_order_controller import ai_draft_order_bp
+from api.controllers.auth_controller import auth_bp
+
 
 
 
@@ -20,8 +22,7 @@ from api.controllers.ai_draft_order_controller import ai_draft_order_bp
 
 def register_routes(app):
     # Đăng ký todo ở đây (vì đã xóa ở app.py)
-    
-    app.register_blueprint(todo_bp, url_prefix='/todos')
+    #app.register_blueprint(todo_bp, url_prefix='/todos')
     # Đăng ký Business Owner
     app.register_blueprint(business_owner_bp, url_prefix='/business-owners')
 
@@ -41,6 +42,8 @@ def register_routes(app):
     app.register_blueprint(account_report_bp, url_prefix='/account-reports')
     app.register_blueprint(ai_assistant_bp, url_prefix='/ai-assistants')
     app.register_blueprint(ai_draft_order_bp, url_prefix='/ai-draft-orders')
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    
 
 
 

@@ -1,65 +1,65 @@
-from flask import Blueprint, request
-from api.schemas.business_owner import BusinessOwnerRequestSchema, BusinessOwnerResponseSchema
+from flask import Blueprint, request, jsonify
+from services.business_owner_service import BusinessOwnerService
 from infrastructure.repositories.business_owner_repository import BusinessOwnerRepository
-from domain.models.business_owner import BusinessOwner
-from api.responses import success_response, error_response
-
-# 1. Khởi tạo Blueprint
+from infrastructure.databases.mssql import session
+from api.middlewares.auth_middleware import token_required
 business_owner_bp = Blueprint('business_owner_bp', __name__)
 
-# 2. Khởi tạo Repository
-repo = BusinessOwnerRepository()
+owner_repo = BusinessOwnerRepository(session)
+owner_service = BusinessOwnerService(owner_repo)
 
 @business_owner_bp.route('/', methods=['POST'])
-def create_owner():
-    '''
-    Create a new business owner
+@token_required
+def register_new_owner():
+    """
+    Tạo chủ cửa hàng mới
     ---
-    tags:
-      - Business Owners
+    tags: [Business Owners]
+    security: [{BearerAuth: []}]
     parameters:
       - in: body
         name: body
         schema:
-          $ref: '#/components/schemas/BusinessOwnerRequest'
+          required: [owner_name, email, password, phone_number, admin_id, plan_id]
+          properties:
+            owner_name: {type: string, example: "Nguyen Van A"}
+            email: {type: string, example: "a@gmail.com"}
+            phone_number: {type: string, example: "0901234567"}
+            password: {type: string, example: "123456"}
+            admin_id: {type: integer, example: 1}
+            plan_id: {type: integer, example: 1}
     responses:
-      201:
-        description: Owner created successfully
-    '''
+      201: {description: "Thành công"}
+    """
+    
     try:
-        data = request.json
-        
-        # Tạo đối tượng Domain từ dữ liệu nhận được
-        new_owner = BusinessOwner(
-            owner_name=data['owner_name'],
-            admin_id=data['admin_id'], 
-            plan_id=data['plan_id'],   
-            phone_number=data.get('phone_number'),
-            email=data.get('email'),
-            account_status=data.get('account_status')
-        )
-        
-        # Lưu vào Database qua Repository
-        result = repo.add(new_owner)
-        
-        # Trả về kết quả đã format qua Response Schema
-        return success_response(BusinessOwnerResponseSchema().dump(result), 201)
+        data = request.get_json()
+        result = owner_service.create_owner(data)
+        return jsonify({"message": "Thành công", "id": result.owner_id}), 201
     except Exception as e:
-        return error_response(str(e), 500)
+        return jsonify({"error": str(e)}), 400
 
 @business_owner_bp.route('/', methods=['GET'])
-def get_owners():
-    '''
-    Get all business owners
+@token_required
+def get_all_business_owners():
+    """
+    Lấy danh sách chủ doanh nghiệp
     ---
-    tags:
-      - Business Owners
+    tags: [Business Owners]
+    security: [{BearerAuth: []}]
     responses:
       200:
-        description: List of business owners
-    '''
+        description: Thành công
+    """
     try:
-        owners = repo.get_all()
-        return success_response(BusinessOwnerResponseSchema(many=True).dump(owners))
+        owners = owner_service.list_all_owners() # Gọi đúng tên hàm trong Service
+        return jsonify([
+            {
+                "id": o.owner_id, 
+                "name": o.owner_name, 
+                "email": o.email,
+                "status": o.account_status
+            } for o in owners
+        ]), 200
     except Exception as e:
-        return error_response(str(e), 500)
+        return jsonify({"error": str(e)}), 500

@@ -1,37 +1,26 @@
-from flask import Blueprint, request
-from api.schemas.account_report import AccountReportRequestSchema, AccountReportResponseSchema
+from flask import Blueprint, jsonify
+from api.middlewares.auth_middleware import token_required
+# Thay vì import từ finance_service chung chung
+from services.account_report_service import AccountReportService
 from infrastructure.repositories.account_report_repository import AccountReportRepository
-from domain.models.account_report import AccountReport
-from api.responses import success_response, error_response
-
 account_report_bp = Blueprint('account_report_bp', __name__)
-repo = AccountReportRepository()
 
 @account_report_bp.route('/', methods=['POST'])
+@token_required
 def create_report():
-    '''
-    Create a new account report
+    """
+    Tạo báo cáo doanh thu
     ---
-    tags:
-      - Account Reports
+    tags: [Reports]
+    security: [{BearerAuth: []}]
     parameters:
       - in: body
         name: body
         schema:
-          $ref: '#/components/schemas/AccountReportRequest'
+          properties:
+            owner_id: {type: integer, example: 1}
+            report_type: {type: string, example: "Monthly"}
+            report_name: {type: string, example: "Báo cáo tháng 1"}
     responses:
-      201:
-        description: Report created successfully
-    '''
-    try:
-        data = request.json
-        new_report = AccountReport(
-            owner_id=data['owner_id'],
-            report_type=data['report_type'],
-            reporting_period=data['reporting_period'],
-            generated_date=data['generated_date']
-        )
-        result = repo.add(new_report)
-        return success_response(AccountReportResponseSchema().dump(result), 201)
-    except Exception as e:
-        return error_response(str(e), 500)
+      201: {description: "Thành công"}
+    """

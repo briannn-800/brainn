@@ -1,37 +1,31 @@
-from flask import Blueprint, request
-from api.schemas.payment import PaymentRequestSchema, PaymentResponseSchema
+from flask import Blueprint, request, jsonify
+from api.middlewares.auth_middleware import token_required
+from services.payment_service import PaymentService
 from infrastructure.repositories.payment_repository import PaymentRepository
-from domain.models.payment import Payment
-from api.responses import success_response, error_response
-
+from infrastructure.databases.mssql import session
+from infrastructure.repositories.debt_repository import DebtRepository
 payment_bp = Blueprint('payment_bp', __name__)
-repo = PaymentRepository()
+repo = PaymentRepository(session)
+debt_repo = DebtRepository(session)
+service = PaymentService(repo, debt_repo)
 
 @payment_bp.route('/', methods=['POST'])
-def create_payment():
-    '''
-    Record a payment for a debt
+@token_required
+def process_debt_payment():
+    """
+    Thanh toán công nợ
     ---
-    tags:
-      - Payments
+    tags: [Finance & Debt]
+    security: [{BearerAuth: []}]
     parameters:
       - in: body
         name: body
         schema:
-          $ref: '#/components/schemas/PaymentRequest'
+          properties:
+            debt_id: {type: integer, example: 1}
+            amount: {type: number, example: 200000}
+            payment_method: {type: string, example: "Transfer"}
     responses:
-      201:
-        description: Payment recorded successfully
-    '''
-    try:
-        data = request.json
-        new_payment = Payment(
-            debt_id=data['debt_id'], #
-            amount_paid=data['amount_paid'], #
-            payment_method=data['payment_method'], #
-            payment_date=data.get('payment_date') #
-        )
-        result = repo.add(new_payment)
-        return success_response(PaymentResponseSchema().dump(result), 201)
-    except Exception as e:
-        return error_response(str(e), 500)
+      201: {description: "Thành công"}
+    """
+    

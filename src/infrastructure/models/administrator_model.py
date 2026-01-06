@@ -8,3 +8,4 @@ class AdministratorModel(Base):
     admin_id = Column(Integer, primary_key=True, autoincrement=True)
     admin_name = Column(String(100), nullable=False)
     admin_permission = Column(String(100))
+    password = Column(String(255), nullable=False)

@@ -1,39 +1,34 @@
-from infrastructure.repositories.product_repository import ProductRepository
-from infrastructure.models.product_model import ProductModel
+from domain.models.product import Product
 
 class ProductService:
-    def __init__(self):
-        self.product_repo = ProductRepository()
+    def __init__(self, repository):
+        # repository ở đây chính là ProductRepository từ infrastructure
+        self.repository = repository
 
     def create_product(self, data):
-        # 1. Bóc tách dữ liệu
-        owner_id = data.get('owner_id')
-        name = data.get('product_name')
-        price = data.get('selling_price')
-        quantity = data.get('stock_quantity', 0)
-
-        # 2. KIỂM TRA (VALIDATION)
-        # Kiểm tra dữ liệu bắt buộc
-        if not owner_id or not name or price is None:
-            raise ValueError("Thiếu thông tin: owner_id, product_name hoặc selling_price")
-
-        # Kiểm tra logic nghiệp vụ
-        if float(price) < 0:
+        # 1. Kiểm tra logic (ví dụ giá không được âm)
+        price = float(data.get('selling_price', 0))
+        stock = int(data.get('stock_quantity', 0))
+        if price < 0:
             raise ValueError("Giá bán không được nhỏ hơn 0")
 
-        if int(quantity) < 0:
-            raise ValueError("Số lượng tồn kho không được âm")
-
-        # 3. Đóng gói dữ liệu vào Model
-        new_product = ProductModel(
-            owner_id=owner_id,
-            product_name=name,
+        # 2. Đóng gói dữ liệu vào đối tượng Product (Domain)
+        product_domain = Product(
+            product_name=data.get('product_name'),
+            owner_id=data.get('owner_id'),
             selling_price=price,
-            stock_quantity=quantity
+            stock_quantity=data.get('stock_quantity', 0)
         )
 
-        # 4. Gửi xuống Repository
-        return self.product_repo.add(new_product)
+        # 3. Gọi Repository để lưu vào DB
+        return self.repository.add(product_domain)
+
+    def get_all_products(self):
+        return self.repository.get_all()
+    # ... các hàm cũ giữ nguyên ...
+    
 
     def get_products_by_owner(self, owner_id):
-        return self.product_repo.get_all_by_owner(owner_id)
+    # Sửa get_all() thành get_by_owner(owner_id)
+        return self.repository.get_by_owner(owner_id)
+    

@@ -1,51 +1,68 @@
-from flask import Blueprint, request
-from api.schemas.employee import EmployeeRequestSchema, EmployeeResponseSchema
+from flask import Blueprint, request, jsonify
+from services.employee_service import EmployeeService
 from infrastructure.repositories.employee_repository import EmployeeRepository
-from domain.models.employee import Employee
-from api.responses import success_response, error_response
+from infrastructure.databases.mssql import session
+from api.middlewares.auth_middleware import token_required
 
 employee_bp = Blueprint('employee_bp', __name__)
-repo = EmployeeRepository()
+
+emp_repo = EmployeeRepository(session)
+emp_service = EmployeeService(emp_repo)
 
 @employee_bp.route('/', methods=['POST'])
-def create_employee():
-    '''
-    Create a new employee
+@token_required
+def create_new_employee(): # Tên hàm duy nhất tránh AssertionError
+    """
+    Tạo nhân viên mới
     ---
-    tags:
-      - Employees
+    tags: [Employees]
+    security: [{BearerAuth: []}]
     parameters:
       - in: body
         name: body
         schema:
-          $ref: '#/components/schemas/EmployeeRequest'
+          required: [employee_name, owner_id, password]
+          properties:
+            employee_name: {type: string, example: "Nguyen Van Employee"}
+            role: {type: string, example: "Staff"}
+            password: {type: string, example: "123456"}
+            owner_id: {type: integer, example: 1}
     responses:
-      201:
-        description: Employee created successfully
-    '''
+      201: {description: "Thành công"}
+    """
     try:
-        data = request.json
-        new_emp = Employee(
-            employee_name=data['employee_name'],
-            owner_id=data['owner_id'],
-            role=data.get('role'),
-            active_status=data.get('active_status', True)
-        )
-        result = repo.add(new_emp)
-        return success_response(EmployeeResponseSchema().dump(result), 201)
+        data = request.get_json()
+        result = emp_service.create_employee(data)
+        return jsonify({"message": "Thành công", "id": result.employee_id}), 201
     except Exception as e:
-        return error_response(str(e), 500)
+        return jsonify({"error": str(e)}), 400
 
-@employee_bp.route('/', methods=['GET'])
-def get_employees():
-    '''
-    Get all employees
+@employee_bp.route('/owner/<int:owner_id>', methods=['GET'])
+@token_required
+def list_employees_by_owner(owner_id):
+    """
+    Lấy danh sách nhân viên của một chủ sở hữu
     ---
-    tags:
-      - Employees
+    tags: [Employees]
+    security: [{BearerAuth: []}]
+    parameters:
+      - name: owner_id
+        in: path
+        type: integer
+        required: true
     responses:
       200:
-        description: List of employees
-    '''
-    employees = repo.get_all()
-    return success_response(EmployeeResponseSchema(many=True).dump(employees))
+        description: Thành công
+    """
+    try:
+        employees = emp_service.get_employees_by_owner(owner_id)
+        return jsonify([
+            {
+                "id": e.employee_id, 
+                "name": e.employee_name, 
+                "role": e.role,
+                "status": e.active_status
+            } for e in employees
+        ]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

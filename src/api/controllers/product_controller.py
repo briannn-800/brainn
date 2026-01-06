@@ -1,81 +1,71 @@
 from flask import Blueprint, request, jsonify
-# Chỉ import đúng Service, không import linh tinh
 from services.product_service import ProductService
+from infrastructure.repositories.product_repository import ProductRepository
+from infrastructure.databases.mssql import session
+from api.middlewares.auth_middleware import token_required
 
 product_bp = Blueprint('product_bp', __name__)
-product_service = ProductService()
+
+# Khởi tạo đúng quy trình: Repo -> Service
+product_repo = ProductRepository(session)
+product_service = ProductService(product_repo)
 
 @product_bp.route('/', methods=['POST'])
-def create_product():
+@token_required
+def create_new_product():
     """
-    Tạo sản phẩm mới (Đã có kiểm tra logic)
+    Thêm sản phẩm mới (Tự động gán Owner ID từ Token)
     ---
-    tags:
-      - Products
+    tags: [Inventory]
+    security: [{BearerAuth: []}]
     parameters:
       - in: body
         name: body
         schema:
-          type: object
-          required:
-            - owner_id
-            - product_name
-            - selling_price
+          required: [product_name, selling_price]
           properties:
-            owner_id:
-              type: integer
-              example: 1
-            product_name:
-              type: string
-              example: "Trà Đào Cam Sả"
-            selling_price:
-              type: number
-              example: 45000
-            stock_quantity:
-              type: integer
-              example: 50
+            product_name: {type: string, example: "Bia Sài Gòn Lager"}
+            selling_price: {type: number, example: 18000}
+            stock_quantity: {type: integer, example: 50}
     responses:
-      201:
-        description: Tạo thành công
-      400:
-        description: Lỗi logic (Giá âm, thiếu tin...)
+      201: {description: "Tạo sản phẩm thành công"}
+      401: {description: "Token không hợp lệ"}
     """
     try:
         data = request.get_json()
+        
+        # MẤU CHỐT: Tự lấy ID từ Token đã giải mã trong middleware
+        # Người dùng không cần truyền owner_id trong JSON nữa
+        data['owner_id'] = request.current_user_id 
+        
         product = product_service.create_product(data)
         
         return jsonify({
             "message": "Tạo sản phẩm thành công",
-            "data": {
-                "product_id": product.product_id,
-                "product_name": product.product_name
-            }
+            "product_id": product.product_id
         }), 201
-    except ValueError as ve:
-        # Trả về lỗi 400 nếu vi phạm logic (ví dụ giá âm)
-        return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        # Trả về lỗi 500 nếu lỗi hệ thống
-        return jsonify({"error": "Lỗi Server: " + str(e)}), 500
+        return jsonify({"error": str(e)}), 400
 
-@product_bp.route('/owner/<int:owner_id>', methods=['GET'])
-def get_products(owner_id):
+@product_bp.route('/', methods=['GET'])
+@token_required
+def list_products_by_owner():
     """
-    Xem danh sách sản phẩm
+    Lấy danh sách sản phẩm (Chỉ lấy đúng của shop đang đăng nhập)
     ---
-    tags:
-      - Products
-    parameters:
-      - name: owner_id
-        in: path
-        type: integer
-        required: true
+    tags: [Inventory]
+    security: [{BearerAuth: []}]
     responses:
       200:
-        description: Thành công
+        description: Danh sách sản phẩm thành công
     """
     try:
-        products = product_service.get_products_by_owner(owner_id)
+        # Lấy ID từ Token để làm điều kiện lọc
+        owner_id = request.current_user_id 
+        
+        # Gọi Service để tìm sản phẩm có owner_id khớp với ID này
+        products = product_service.get_products_by_owner(owner_id) 
+
         result = []
         for p in products:
             result.append({

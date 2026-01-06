@@ -1,36 +1,36 @@
-from flask import Blueprint, request
-from api.schemas.ai_assistant import AIAssistantRequestSchema, AIAssistantResponseSchema
+from flask import Blueprint, request, jsonify
+from api.middlewares.auth_middleware import token_required
+from services.ai_assistant_service import AIAssistantService
 from infrastructure.repositories.ai_assistant_repository import AIAssistantRepository
-from domain.models.ai_assistant import AIAssistant
-from api.responses import success_response, error_response
+from infrastructure.databases.mssql import session
 
 ai_assistant_bp = Blueprint('ai_assistant_bp', __name__)
-repo = AIAssistantRepository()
 
-@ai_assistant_bp.route('/', methods=['POST'])
-def create_ai():
-    '''
-    Create a new AI Assistant version
+# Khởi tạo đúng quy trình
+ai_repo = AIAssistantRepository(session)
+ai_service = AIAssistantService(ai_repo)
+
+@ai_assistant_bp.route('/config', methods=['POST'])
+@token_required
+def config_ai_version():
+    """
+    Cấu hình phiên bản AI
     ---
-    tags:
-      - AI Assistants
+    tags: [AI Features]
+    security: [{BearerAuth: []}]
     parameters:
       - in: body
         name: body
         schema:
-          $ref: '#/components/schemas/AIAssistantRequest'
+          properties:
+            version: {type: string, example: "v2.0"}
+            model_type: {type: string, example: "GPT-4o"}
     responses:
-      201:
-        description: AI created successfully
-    '''
+      200: {description: "Cấu hình thành công"}
+    """
     try:
-        data = request.json
-        new_ai = AIAssistant(
-            version=data['version'],
-            supported_languages=data.get('supported_languages'),
-            ai_model_type=data.get('ai_model_type')
-        )
-        result = repo.add(new_ai)
-        return success_response(AIAssistantResponseSchema().dump(result), 201)
+        data = request.get_json()
+        ai_service.update_ai_settings(data)
+        return jsonify({"message": "Cấu hình AI đã được cập nhật"}), 200
     except Exception as e:
-        return error_response(str(e), 500)
+        return jsonify({"error": str(e)}), 400

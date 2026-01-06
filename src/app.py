@@ -1,66 +1,49 @@
-from flask import Flask, jsonify
-from api.swagger import spec
-
-from api.middleware import middleware
-from api.responses import success_response
-from infrastructure.databases import init_db
-from config import Config
+from flask import Flask
 from flasgger import Swagger
-from config import SwaggerConfig
-from flask_swagger_ui import get_swaggerui_blueprint
+from infrastructure.databases import init_db
 from api.routes import register_routes
-import infrastructure.models
+import infrastructure.models 
+
 def create_app():
     app = Flask(__name__)
-    Swagger(app)
-    # Đăng ký blueprint trước
-    #app.register_blueprint(todo_bp)
+
+    # Cấu hình Swagger duy nhất, hỗ trợ nút Authorize (Ổ khóa)
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": 'apispec',
+                "route": '/apispec.json',
+                "rule_filter": lambda rule: True,
+                "model_filter": lambda tag: True,
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/docs/",
+        "securityDefinitions": {
+            "BearerAuth": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "Nhập theo cú pháp: Bearer <token>"
+            }
+        }
+    }
+
+    Swagger(app, config=swagger_config)
+    
+    # Đăng ký các Route
     register_routes(app)
-     # Thêm Swagger UI blueprint
-    SWAGGER_URL = '/docs'
-    API_URL = '/swagger.json'
-    swaggerui_blueprint = get_swaggerui_blueprint(
-        SWAGGER_URL,
-        API_URL,
-        config={'app_name': "Todo API"}
-    )
-    app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
     try:
         init_db(app)
+        print("✅ Kết nối Database thành công!")
     except Exception as e:
-        print(f"Error initializing database: {e}")
-
-    # Register middleware
-    middleware(app)
-
-    # Register routes
-    ''' with app.test_request_context():
-        for rule in app.url_map.iter_rules():
-            # Thêm các endpoint khác nếu cần
-            if rule.endpoint.startswith(('todo.', 'course.', 'user.')):
-                view_func = app.view_functions[rule.endpoint]
-                print(f"Adding path: {rule.rule} -> {view_func}")
-                spec.path(view=view_func)'''
-    # Sửa đoạn này trong file app.py (khoảng dòng 42)
-    with app.app_context(): # Dùng app_context thay vì test_request_context
-        for rule in app.url_map.iter_rules():
-            # Quét tất cả ngoại trừ các route mặc định của hệ thống
-            if not rule.endpoint.startswith(('static', 'swagger')):
-                view_func = app.view_functions[rule.endpoint]
-                print(f"Adding path: {rule.rule} -> {view_func}")
-                spec.path(view=view_func)
-
-                
-    @app.route("/swagger.json")
-    def swagger_json():
-        return jsonify(spec.to_dict())
+        print(f"❌ Lỗi DB: {e}")
 
     return app
-# Run the application
 
 if __name__ == '__main__':
     app = create_app()
     app.run(host='0.0.0.0', port=9999, debug=True)
-
-

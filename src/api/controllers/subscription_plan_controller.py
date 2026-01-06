@@ -1,53 +1,62 @@
-from flask import Blueprint, request
-from api.schemas.subscription_plan import SubscriptionPlanRequestSchema, SubscriptionPlanResponseSchema
+from flask import Blueprint, request, jsonify
 from infrastructure.repositories.subscription_plan_repository import SubscriptionPlanRepository
-from domain.models.subscription_plan import SubscriptionPlan
-from api.responses import success_response, error_response
+from services.subscription_plan_service import SubscriptionPlanService
+from infrastructure.databases.mssql import session
+from api.middlewares.auth_middleware import token_required
 
 subscription_plan_bp = Blueprint('subscription_plan_bp', __name__)
-repo = SubscriptionPlanRepository()
+
+plan_repo = SubscriptionPlanRepository(session)
+plan_service = SubscriptionPlanService(plan_repo)
 
 @subscription_plan_bp.route('/', methods=['POST'])
-def create_plan():
-    '''
-    Create a new subscription plan
+@token_required
+def create_new_subscription_plan(): # Tên hàm duy nhất
+    """
+    Tạo gói cước dịch vụ mới
     ---
-    tags:
-      - Subscription Plans
+    tags: [Subscriptions]
+    security: [{BearerAuth: []}]
     parameters:
       - in: body
         name: body
         schema:
-          $ref: '#/components/schemas/SubscriptionPlanRequest'
+          required: [plan_name, duration, price]
+          properties:
+            plan_name: {type: string, example: "Gói Premium 12 tháng"}
+            duration: {type: integer, example: 12}
+            price: {type: number, example: 1200000}
     responses:
-      201:
-        description: Plan created successfully
-    '''
+      201: {description: "Thành công"}
+    """
     try:
-        data = request.json
-        new_plan = SubscriptionPlan(
-            plan_name=data['plan_name'],
-            duration=data.get('duration'),
-            price=data.get('price')
-        )
-        result = repo.add(new_plan)
-        return success_response(SubscriptionPlanResponseSchema().dump(result), 201)
+        data = request.get_json()
+        result = plan_service.create_plan(data)
+        return jsonify({"message": "Tạo gói cước thành công", "id": result.plan_id}), 201
     except Exception as e:
-        return error_response(str(e), 500)
+        return jsonify({"error": str(e)}), 400
 
 @subscription_plan_bp.route('/', methods=['GET'])
-def get_plans():
-    '''
-    Get all subscription plans
+@token_required
+def list_all_plans(): # Tên hàm duy nhất
+    """
+    Lấy danh sách các gói cước
     ---
-    tags:
-      - Subscription Plans
+    tags: [Subscriptions]
+    security: [{BearerAuth: []}]
     responses:
       200:
-        description: List of plans
-    '''
+        description: Thành công
+    """
     try:
-        plans = repo.get_all()
-        return success_response(SubscriptionPlanResponseSchema(many=True).dump(plans))
+        plans = plan_service.list_plans()
+        return jsonify([
+            {
+                "id": p.plan_id, 
+                "name": p.plan_name, 
+                "duration": p.duration,
+                "price": float(p.price)
+            } for p in plans
+        ]), 200
     except Exception as e:
-        return error_response(str(e), 500)
+        return jsonify({"error": str(e)}), 500

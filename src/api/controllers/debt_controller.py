@@ -1,38 +1,35 @@
-from flask import Blueprint, request
-from api.schemas.debt import DebtRequestSchema, DebtResponseSchema
+from flask import Blueprint, request, jsonify
+from api.middlewares.auth_middleware import token_required
+from services.debt_service import DebtService
 from infrastructure.repositories.debt_repository import DebtRepository
-from domain.models.debt import Debt
-from api.responses import success_response, error_response
+from infrastructure.databases.mssql import session
 
 debt_bp = Blueprint('debt_bp', __name__)
-repo = DebtRepository()
+repo = DebtRepository(session)
+service = DebtService(repo)
 
 @debt_bp.route('/', methods=['POST'])
-def create_debt():
-    '''
-    Create a new debt record
+@token_required
+def create_customer_debt():
+    """
+    Ghi nhận công nợ mới
     ---
-    tags:
-      - Debts
+    tags: [Finance & Debt]
+    security: [{BearerAuth: []}]
     parameters:
       - in: body
         name: body
         schema:
-          $ref: '#/components/schemas/DebtRequest'
+          properties:
+            order_id: {type: integer, example: 1}
+            customer_id: {type: integer, example: 1}
+            debt_amount: {type: number, example: 500000}
     responses:
-      201:
-        description: Debt created successfully
-    '''
+      201: {description: "Thành công"}
+    """
     try:
-        data = request.json
-        new_debt = Debt(
-            order_id=data['order_id'], #
-            customer_id=data['customer_id'], #
-            debt_amount=data['debt_amount'], #
-            debt_status=data.get('debt_status', 'Unpaid'), #
-            debt_created_date=data.get('debt_created_date') #
-        )
-        result = repo.add(new_debt)
-        return success_response(DebtResponseSchema().dump(result), 201)
+        data = request.get_json()
+        result = service.create_debt_from_order(data['order_id'], data['customer_id'], data['debt_amount'])
+        return jsonify({"id": result.debt_id}), 201
     except Exception as e:
-        return error_response(str(e), 500)
+        return jsonify({"error": str(e)}), 400

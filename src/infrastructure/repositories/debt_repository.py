@@ -22,3 +22,5 @@ class DebtRepository:
         except Exception as e:
             self.session.rollback()
             raise e
+    def get_by_customer(self, customer_id):
+        return self.session.query(DebtModel).filter_by(customer_id=customer_id).all()

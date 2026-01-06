@@ -13,3 +13,4 @@ class BusinessOwnerModel(Base):
     # Khóa ngoại nối đến Admin
     admin_id = Column(Integer, ForeignKey('administrators.admin_id'))
     plan_id = Column(Integer) # Sau này nối đến SubscriptionPlan
+    password = Column(String(255), nullable=False)
