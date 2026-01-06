@@ -1,4 +1,4 @@
-from infrastructure.models.account_report_model import AccountReportModel
+from infrastructure.models.sale_and_finance.account_report_model import AccountReportModel
 from infrastructure.databases.mssql import session
 
 class AccountReportRepository:

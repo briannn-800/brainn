@@ -1,4 +1,4 @@
-from infrastructure.models.employee_model import EmployeeModel
+from infrastructure.models.access_and_identity.employee_model import EmployeeModel
 from domain.models.employee import Employee
 from infrastructure.databases.mssql import session
 

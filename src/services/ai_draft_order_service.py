@@ -1,4 +1,4 @@
-from infrastructure.models.ai_draft_order_model import AIDraftOrderModel
+from infrastructure.models.ai_core.ai_draft_order_model import AIDraftOrderModel
 
 class AIDraftOrderService:
     def __init__(self, repository):

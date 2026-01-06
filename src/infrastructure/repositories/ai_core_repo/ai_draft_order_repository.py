@@ -1,4 +1,4 @@
-from infrastructure.models.ai_draft_order_model import AIDraftOrderModel
+from infrastructure.models.ai_core.ai_draft_order_model import AIDraftOrderModel
 from domain.models.ai_draft_order import AIDraftOrder
 from infrastructure.databases.mssql import session
 

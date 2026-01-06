@@ -1,4 +1,4 @@
-from infrastructure.models.ai_assistant_model import AIAssistantModel
+from infrastructure.models.ai_core.ai_assistant_model import AIAssistantModel
 from domain.models.ai_assistant import AIAssistant
 from infrastructure.databases.mssql import session
 

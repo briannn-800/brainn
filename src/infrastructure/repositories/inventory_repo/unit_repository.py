@@ -1,4 +1,4 @@
-from infrastructure.models.unit_model import UnitModel
+from infrastructure.models.inventory.unit_model import UnitModel
 from infrastructure.databases.mssql import session
 
 class UnitRepository:

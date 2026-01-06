@@ -1,4 +1,4 @@
-from infrastructure.models.ai_assistant_model import AIAssistantModel
+from infrastructure.models.ai_core.ai_assistant_model import AIAssistantModel
 
 class AIAssistantService:
     def __init__(self, repository):

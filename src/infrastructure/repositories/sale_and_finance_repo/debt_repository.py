@@ -1,4 +1,4 @@
-from infrastructure.models.debt_model import DebtModel
+from infrastructure.models.sale_and_finance.debt_model import DebtModel
 from domain.models.debt import Debt
 from infrastructure.databases.mssql import session
 

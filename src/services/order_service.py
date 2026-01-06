@@ -1,6 +1,6 @@
 from datetime import datetime
-from infrastructure.models.order_model import OrderModel
-from infrastructure.models.order_detail_model import OrderDetailModel
+from infrastructure.models.sale_and_finance.order_model import OrderModel
+from infrastructure.models.sale_and_finance.order_detail_model import OrderDetailModel
 
 class OrderService:
     def __init__(self, repository):

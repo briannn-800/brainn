@@ -1,4 +1,4 @@
-from infrastructure.models.payment_model import PaymentModel
+from infrastructure.models.sale_and_finance.payment_model import PaymentModel
 from domain.models.payment import Payment
 from infrastructure.databases.mssql import session
 

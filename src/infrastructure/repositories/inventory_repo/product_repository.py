@@ -1,4 +1,4 @@
-from infrastructure.models.product_model import ProductModel
+from infrastructure.models.inventory.product_model import ProductModel
 from domain.models.product import Product
 from infrastructure.databases.mssql import session
 

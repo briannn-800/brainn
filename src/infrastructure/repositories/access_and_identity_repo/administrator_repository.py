@@ -1,4 +1,4 @@
-from infrastructure.models.administrator_model import AdministratorModel
+from infrastructure.models.access_and_identity.administrator_model import AdministratorModel
 from infrastructure.databases.mssql import session
 
 class AdministratorRepository:

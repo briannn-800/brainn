@@ -1,4 +1,4 @@
-from infrastructure.models.order_detail_model import OrderDetailModel
+from infrastructure.models.sale_and_finance.order_detail_model import OrderDetailModel
 from domain.models.order_detail import OrderDetail
 from infrastructure.databases.mssql import session
 

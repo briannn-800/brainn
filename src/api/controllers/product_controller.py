@@ -6,7 +6,6 @@ from api.middlewares.auth_middleware import token_required
 
 product_bp = Blueprint('product_bp', __name__)
 
-# Khởi tạo đúng quy trình: Repo -> Service
 product_repo = ProductRepository(session)
 product_service = ProductService(product_repo)
 
@@ -34,8 +33,7 @@ def create_new_product():
     try:
         data = request.get_json()
         
-        # MẤU CHỐT: Tự lấy ID từ Token đã giải mã trong middleware
-        # Người dùng không cần truyền owner_id trong JSON nữa
+      
         data['owner_id'] = request.current_user_id 
         
         product = product_service.create_product(data)

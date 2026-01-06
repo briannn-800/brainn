@@ -1,4 +1,4 @@
-from infrastructure.models.subscription_plan_model import SubscriptionPlanModel
+from infrastructure.models.access_and_identity.subscription_plan_model import SubscriptionPlanModel
 from infrastructure.databases.mssql import session
 
 class SubscriptionPlanRepository:

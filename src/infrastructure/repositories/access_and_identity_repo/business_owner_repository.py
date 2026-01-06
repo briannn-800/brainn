@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from infrastructure.models.business_owner_model import BusinessOwnerModel
+from infrastructure.models.access_and_identity.business_owner_model import BusinessOwnerModel
 from domain.models.business_owner import BusinessOwner
 from infrastructure.databases.mssql import session
 

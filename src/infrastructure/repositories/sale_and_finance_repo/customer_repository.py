@@ -1,4 +1,4 @@
-from infrastructure.models.customer_model import CustomerModel
+from infrastructure.models.sale_and_finance.customer_model import CustomerModel
 from infrastructure.databases.mssql import session
 
 class CustomerRepository:

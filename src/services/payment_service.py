@@ -1,5 +1,5 @@
 from datetime import datetime
-from infrastructure.models.payment_model import PaymentModel
+from infrastructure.models.sale_and_finance.payment_model import PaymentModel
 
 class PaymentService:
     def __init__(self, payment_repo, debt_repo):
